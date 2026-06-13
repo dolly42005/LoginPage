@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,14 +13,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f4f4f4;
+            background-color: #d3a4f7;
             font-family: Arial, sans-serif;
         }
 
         .login-container {
             width: 300px;
             padding: 25px;
-            border: 1px solid #ccc;
+            border: 1px solid #ebe7e7;
             border-radius: 8px;
             background-color: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -41,6 +42,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            background-color: rgb(221, 245, 245);
         }
 
         button {
@@ -57,41 +59,224 @@
         button:hover {
             background-color: #005fd1;
         }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            width: 100%;
+            padding-right: 40px;
+            box-sizing: border-box;
+        }
+
+        #eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+
+        .submitInfo {
+            color: green;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
     </style>
 </head>
-<body>
+
+<body background="../frontend/images/login-bg.jpg">
 
     <div class="login-container">
+
         <h2>Welcome to Login Page</h2>
 
         <div class="form-group">
             <label for="username">Name</label>
+
             <input type="text" id="username" placeholder="Enter your name">
+
+            <small id="usernameError" class="error"></small>
         </div>
 
         <div class="form-group">
+
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="At least 6 characters">
+
+            <div class="password-container">
+
+                <input type="password" id="password" placeholder="At least 8 characters"
+                    oninput="checkPasswordStrength()">
+
+                <span id="eye" onclick="togglePassword()">👁️</span>
+
+            </div>
+
+            <small id="passwordError" class="error"></small>
+
+            <div id="password-rules">
+                <small id="passwordStrength"></small>
+            </div>
+
         </div>
 
-        <button type="submit" onclick="addUser()">Submit</button>
+        <button type="button" onclick="validateForm()">
+            Submit
+        </button>
+        <small id="submitInfo" class="submitInfo"></small>
 
     </div>
 
     <script>
-        function addUser(){
-            let username = document.getElementById('username').value;
-            let password = document.getElementById('password').value;
-            
-            fetch('http://localhost:3000/add-user' , {
-                method : 'POST',
-                headers : {'Content-Type' : 'application/json'},
-                body : JSON.stringify({
-                    username, password
-                })
-            })
+
+        function validateForm() {
+
+            let username =
+                document.getElementById("username").value.trim();
+
+            let password =
+                document.getElementById("password").value.trim();
+
+            document.getElementById("usernameError").textContent = "";
+            document.getElementById("passwordError").textContent = "";
+
+            let isValid = true;
+
+            if (username === "") {
+
+                document.getElementById("usernameError")
+                    .textContent = "Username cannot be empty";
+
+                isValid = false;
+            }
+
+            if (password === "") {
+
+                document.getElementById("passwordError")
+                    .textContent = "Password cannot be empty";
+
+                isValid = false;
+            }
+
+            if (isValid) {
+                addUser();
+
+            }
         }
+
+        function addUser() {
+
+            let username =
+                document.getElementById("username").value.trim();
+
+            let password =
+                document.getElementById("password").value.trim();
+
+            fetch('http://localhost:3000/add-user', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+
+            })
+                .then(response => response.text())
+                .then(data => {
+
+                    if (data === "Added Successfully") {
+
+                        document.getElementById("submitInfo").textContent =
+                            "Login Successful";
+
+                        // Reload page after 2 seconds
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+
+                    }
+
+                })
+
+                .catch(error => {
+                    console.log(error);
+                });
+
+        }
+
+        function checkPasswordStrength() {
+
+            const password = document.getElementById("password").value;
+            document.getElementById("passwordStrength").textContent = "";
+
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /[0-9]/.test(password);
+            const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+            let score = 0;
+
+            if (hasUpperCase) score++;
+            if (hasLowerCase) score++;
+            if (hasNumbers) score++;
+            if (hasSpecialChar) score++;
+            if (password.length >= 6) score++;
+
+
+            const strength = document.getElementById('passwordStrength');
+
+            if (password.length === 0) {
+
+        strength.textContent = "";
+
+    } else if (score <= 2) {
+
+        strength.textContent = "Weak Password";
+        strength.style.color = "red";
+
+    } else if (score <= 4) {
+
+        strength.textContent = "Medium Password";
+        strength.style.color = "orange";
+
+    } else {
+
+        strength.textContent = "Strong Password";
+        strength.style.color = "green";
+    }
+}
+
+        function togglePassword() {
+
+            const password =
+                document.getElementById("password");
+
+            if (password.type === "password") {
+
+                password.type = "text";
+
+            } else {
+
+                password.type = "password";
+            }
+        }
+
     </script>
 
 </body>
+
 </html>

@@ -49,9 +49,30 @@ db.connect((err)=>{
 app.post('/add-user', (req,res)=>{
     console.log("Received Data:", req.body);
 
-    const { username, password } = req.body;
+    let { username, password } = req.body;
 
-    
+
+    // Trim whitespace from both fields
+   username = username ? username.trim() : '';
+   password = password ? password.trim() : '';
+   
+
+   // Validate username is not empty
+   if (!username) {
+       return res.status(400).json({error: 'Username should not be empty'});
+   }
+
+   // Validate username minimum length
+   if (username.length < 3) {
+       return res.status(400).json({error: 'Username must be at least 3 characters long'});
+   }
+
+   // Validate password is not empty
+   if (!password) {
+       return res.status(400).json({error: 'Password should not be empty'});
+   }
+
+  
     const query = "INSERT INTO Login(userName, password) VALUES (?, ?)";
 
     db.query(query, [username, password], (err, results) => {
